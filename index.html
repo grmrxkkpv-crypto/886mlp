@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1020">
+<meta name="description" content="在浏览器本地分析 MP3 音频频谱，生成 MicTune .mttune.json 均衡器音色预设。无需上传音频。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>MicTune 音色工坊 · MP3 频谱预设</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2d;--panel2:#17223a;--line:#283653;--text:#eef3ff;--muted:#a3b0ca;--accent:#9b8cff;--accent2:#63d8c3;--warn:#ffd38a;--good:#83e0b5;--shadow:0 22px 65px #0005}
+*{box-sizing:border-box}html{min-width:320px}body{margin:0;min-height:100vh;color:var(--text);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(900px 520px at 8% -8%,#34306e77,transparent 60%),radial-gradient(760px 440px at 95% 5%,#164b5870,transparent 58%),var(--bg)}
+button,input{font:inherit}button{cursor:pointer}.shell{max-width:1120px;margin:auto;padding:34px 22px 54px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#9b8cff,#58d5c0);display:grid;place-items:center;color:#11152b;font-weight:900;font-size:21px;box-shadow:0 8px 24px #7464df55}.brand small{display:block;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}.brand strong{font-size:16px;letter-spacing:.02em}.local-pill{border:1px solid #376456;background:#102b2b;color:#a2f1d6;border-radius:999px;padding:7px 12px;font-size:12px;white-space:nowrap}.hero{max-width:760px;margin:0 0 25px}.eyebrow{color:#b6aaff;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}.hero h1{font-size:clamp(29px,5vw,48px);line-height:1.13;letter-spacing:-.035em;margin:10px 0 12px}.hero p{color:var(--muted);font-size:16px;max-width:700px;margin:0}.layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(290px,.88fr);gap:18px;align-items:start}.panel{background:linear-gradient(160deg,#17213aee,#111a2fee);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)}.panel h2{font-size:17px;margin:0 0 5px}.desc{color:var(--muted);font-size:13px;margin:0 0 18px}.drop{min-height:190px;border:1.5px dashed #52658b;border-radius:17px;background:linear-gradient(145deg,#1c2742aa,#121b2e);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;transition:.18s}.drop.drag{border-color:var(--accent2);background:#14353899;transform:scale(1.005)}.upload-icon{width:48px;height:48px;border-radius:15px;background:#2b3152;display:grid;place-items:center;color:#b9adff;font-size:25px;margin-bottom:9px}.drop strong{font-size:16px}.drop p{color:var(--muted);font-size:13px;margin:4px 0 12px}.file-btn,.primary,.secondary{border:0;border-radius:12px;padding:11px 16px;font-weight:700}.file-btn{background:#d6d0ff;color:#1a1940}.file-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.file-meta{margin-top:13px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:#0d1527;display:none}.file-meta.show{display:block}.file-line{display:flex;justify-content:space-between;gap:12px;align-items:center}.file-name{font-weight:650;overflow-wrap:anywhere}.file-size{font-size:12px;color:var(--muted);white-space:nowrap}.audio{width:100%;height:36px;margin-top:10px;display:none}.audio.show{display:block}.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:19px}.field label{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:13px;margin-bottom:7px}.field input[type=text]{width:100%;border:1px solid var(--line);border-radius:11px;background:#0d1527;color:var(--text);padding:11px 12px;outline:none}.field input:focus{border-color:var(--accent)}.range-wrap{display:flex;gap:10px;align-items:center}.range-wrap input{width:100%;accent-color:var(--accent)}.range-value{min-width:40px;text-align:right;color:#d9d4ff;font-variant-numeric:tabular-nums}.primary{width:100%;margin-top:18px;background:linear-gradient(100deg,#a99aff,#77ded0);color:#11172a;font-size:15px;box-shadow:0 8px 25px #8579df35}.primary:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}.secondary{background:#273351;color:var(--text);border:1px solid #3b4b6d}.status{padding:11px 13px;border-radius:11px;background:#0d1527;border:1px solid #263653;color:var(--muted);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:14px}.status.good{border-color:#28634f;color:#a4f1cc}.status.warn{border-color:#765a2d;color:#ffdda0}.status.error{border-color:#7c3946;color:#ffb8c4}.note{font-size:12px;color:var(--muted);margin:12px 0 0}.notice{padding:12px 14px;border-left:3px solid var(--warn);border-radius:0 11px 11px 0;background:#352b1d;color:#f4dfb7;font-size:12px;margin-top:17px}.right-stack{display:grid;gap:18px}.empty-state{padding:26px 12px;text-align:center;border:1px dashed #34425e;border-radius:15px;color:var(--muted);font-size:13px}.empty-symbol{font-size:27px;display:block;margin-bottom:7px;color:#b9adff}.result[hidden]{display:none}.result-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.tag{font-size:11px;color:#aaf0d4;border:1px solid #316753;background:#102b2b;padding:4px 8px;border-radius:999px}.bands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}.band{padding:12px;border:1px solid var(--line);border-radius:13px;background:#0e1729}.band-top{display:flex;justify-content:space-between;align-items:center}.band small{font-size:12px;color:var(--muted)}.band b{font-size:18px;font-variant-numeric:tabular-nums}.meter{height:6px;border-radius:20px;background:#293754;overflow:hidden;margin-top:9px}.meter i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#9a8cff,#67dfc8)}.summary{margin-top:15px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0e1729;border:1px solid var(--line);border-radius:12px;padding:10px}.stat b{display:block;font-size:15px}.stat small{font-size:11px;color:var(--muted)}.download{width:100%;margin-top:17px}.guide ol{padding-left:19px;color:var(--muted);font-size:13px;margin:13px 0 0}.guide li{padding:4px 0}.guide strong{color:var(--text)}footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#8491ac;font-size:11px;margin-top:25px;padding:0 4px}.hidden{display:none!important}
+@media(max-width:820px){.layout{grid-template-columns:1fr}.right-stack{grid-template-columns:1fr 1fr}.guide{grid-column:1/-1}}
+@media(max-width:560px){.shell{padding:22px 13px 38px}.top{align-items:flex-start}.local-pill{font-size:11px;padding:6px 9px}.panel{padding:17px;border-radius:18px}.controls{grid-template-columns:1fr}.right-stack{grid-template-columns:1fr}.guide{grid-column:auto}.hero p{font-size:14px}.drop{min-height:170px}.summary{grid-template-columns:1fr 1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand"><div class="logo">M</div><div><strong>MicTune 音色工坊</strong><small>MP3 spectrum preset studio</small></div></div>
+    <div class="local-pill">● 本地处理 · 不上传音频</div>
+  </header>
+  <section class="hero">
+    <div class="eyebrow">Browser audio tool</div>
+    <h1>把 MP3 频谱，<br>变成 MicTune 音色预设。</h1>
+    <p>在浏览器中分析音频的 8 个频段，并导出 MicTune 使用的 <code>.mttune.json</code> EQ 预设。电脑和手机浏览器均可使用。</p>
+  </section>
+  <div class="layout">
+    <section class="panel">
+      <h2>01 / 导入音频</h2>
+      <p class="desc">选择 MP3 文件，或将文件拖到下面的区域。</p>
+      <div id="drop" class="drop">
+        <div class="upload-icon">↑</div>
+        <strong>拖放 MP3 文件到这里</strong>
+        <p>支持 MP3 音频 · 建议文件小于 80 MB</p>
+        <label class="file-btn" for="file">选择 MP3 文件</label>
+        <input class="file-hidden" id="file" type="file" accept=".mp3,audio/mpeg">
+      </div>
+      <div id="fileMeta" class="file-meta">
+        <div class="file-line"><div id="fileName" class="file-name"></div><div id="fileSize" class="file-size"></div></div>
+        <audio id="preview" class="audio" controls preload="metadata"></audio>
+      </div>
+      <div class="controls">
+        <div class="field"><label for="presetName">预设名称</label><input id="presetName" type="text" maxlength="48" value="MP3 频谱音色" placeholder="输入音色名称"></div>
+        <div class="field"><label for="strength">频谱映射强度 <span id="strengthValue" class="range-value">0.55</span></label><div class="range-wrap"><input id="strength" type="range" min="0" max="1.5" step="0.05" value="0.55"></div></div>
+      </div>
+      <button id="analyze" class="primary" disabled>分析 MP3 并生成预设</button>
+      <div id="status" class="status" role="status" aria-live="polite">先选择一个 MP3 文件。</div>
+      <div class="notice">功能说明：本工具根据 MP3 的平均频谱生成 EQ 参数，不会把 MP3 原音频嵌入 MicTune，也不会生成声线克隆模型。它属于频谱近似预设，不等同于真正的 MP3 音色样本导入。</div>
+    </section>
+    <div class="right-stack">
+      <section id="result" class="panel result" hidden>
+        <div class="result-head"><div><h2>02 / 分析结果</h2><p class="desc" style="margin:4px 0 0">8 段 EQ 参数</p></div><span class="tag">已生成</span></div>
+        <div id="bands" class="bands"></div>
+        <div class="summary">
+          <div class="stat"><b id="duration">—</b><small>音频时长</small></div>
+          <div class="stat"><b id="sampleRate">—</b><small>采样率</small></div>
+          <div class="stat"><b id="channels">—</b><small>声道数</small></div>
+        </div>
+        <p class="note">EQ 参数范围为 -18 至 +18。未涉及的音色控制项保持默认值 0。</p>
+        <button id="download" class="primary download">下载 .mttune.json</button>
+        <p id="downloadStatus" class="note hidden" style="color:var(--good)">配置文件已生成，可在 MicTune 的音色配置导入功能中选择该文件。</p>
+      </section>
+      <section class="panel guide">
+        <h2>03 / 如何导入 MicTune</h2>
+        <ol>
+          <li>在左侧选择 MP3，点击<strong>分析 MP3 并生成预设</strong>。</li>
+          <li>分析完成后，下载 <code>.mttune.json</code> 文件。</li>
+          <li>打开 MicTune 原有的音色配置导入功能，选择该 JSON 文件。</li>
+        </ol>
+        <p class="note">是否能被目标版本成功导入，仍需在该版本 MicTune 内实测。此网页不会修改手机中已安装的 APK。</p>
+      </section>
+    </div>
+  </div>
+  <footer><span>MicTune 音色工坊 · 网页版</span><span>无需账号 · 无需上传 · 仅在当前设备处理</span></footer>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const EQ_KEYS=['eq80','eq160','eq320','eq640','eq1200','eq2500','eq5000','eq10000'];
+const LABELS=['80 Hz','160 Hz','320 Hz','640 Hz','1.2 kHz','2.5 kHz','5 kHz','10 kHz'];
+const CENTERS=[80,160,320,640,1200,2500,5000,10000];
+const KNOWN_PARAMS=['breath_amt','chorus_depth','chorus_mix','chorus_rate','comp_atk','comp_makeup','comp_ratio','comp_rel','comp_thr','delay_fb','delay_ms','delay_tone','delay_wet','drive','eq10000','eq1200','eq160','eq2500','eq320','eq5000','eq640','eq80','flanger_depth','flanger_fb','flanger_mix','flanger_rate','formant','formant_keep','gate_rel','gate_thr','harm_int','harm_lvl','harm_voices','hpf','hpf_slope','ingain','lpf','lpf_slope','outgain','phaser_depth','phaser_mix','phaser_rate','pitch','rev_damp','rev_decay','rev_pre','rev_size','rev_wet','sat_drive','sat_mix','sat_tone','shimmer_amt','tone','trem_depth','trem_rate','vib_depth','vib_rate','wah_depth','wah_sens'];
+let selectedFile=null,previewUrl=null,output=null;
+const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+const MAX_BYTES=80*1024*1024;
+$('strength').addEventListener('input',()=>{$('strengthValue').textContent=Number($('strength').value).toFixed(2)});
+function setStatus(message,type=''){$('status').textContent=message;$('status').className='status'+(type?' '+type:'')}
+function formatSize(bytes){return bytes>=1024*1024?(bytes/1024/1024).toFixed(2)+' MB':(bytes/1024).toFixed(1)+' KB'}
+function clearResult(){$('result').hidden=true;$('downloadStatus').classList.add('hidden');output=null}
+function useFile(file){
+  if(!file)return;
+  const isMp3=/\.mp3$/i.test(file.name)||file.type==='audio/mpeg';
+  if(!isMp3){setStatus('请选择 MP3 文件（.mp3）。','warn');return}
+  if(file.size>MAX_BYTES){setStatus('文件超过 80 MB。请先压缩或截取较短的 MP3，再重新导入。','warn');return}
+  selectedFile=file;clearResult();$('analyze').disabled=false;$('fileMeta').classList.add('show');$('fileName').textContent=file.name;$('fileSize').textContent=formatSize(file.size);$('presetName').value=file.name.replace(/\.[^.]+$/,'').slice(0,48);
+  if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(file);$('preview').src=previewUrl;$('preview').classList.add('show');setStatus('已选择：'+file.name+'\n文件大小：'+formatSize(file.size)+'\n可以开始分析。');
+}
+$('file').addEventListener('change',e=>useFile(e.target.files&&e.target.files[0]));
+const drop=$('drop');
+['dragenter','dragover'].forEach(name=>drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('drag')}));
+['dragleave','drop'].forEach(name=>drop.addEventListener(name,e=>{e.preventDefault();drop.classList.remove('drag')}));
+drop.addEventListener('drop',e=>useFile(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]));
+function fft(re,im){
+  const n=re.length;
+  for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
+  for(let len=2;len<=n;len<<=1){const angle=-2*Math.PI/len,wr0=Math.cos(angle),wi0=Math.sin(angle);for(let start=0;start<n;start+=len){let wr=1,wi=0;const half=len>>1;for(let j=0;j<half;j++){const a=start+j,b=a+half,uR=re[a],uI=im[a],vR=re[b]*wr-im[b]*wi,vI=re[b]*wr+im[b]*wi;re[a]=uR+vR;im[a]=uI+vI;re[b]=uR-vR;im[b]=uI-vI;const next=wr*wr0-wi*wi0;wi=wr*wi0+wi*wr0;wr=next}}}
+}
+function analyzeBuffer(buffer){
+  const N=4096, sr=buffer.sampleRate, channelData=[];
+  for(let c=0;c<buffer.numberOfChannels;c++)channelData.push(buffer.getChannelData(c));
+  const length=buffer.length, hop=Math.max(4096,Math.floor(sr*.5)), frames=Math.max(1,Math.ceil(length/hop));
+  const sums=new Array(EQ_KEYS.length).fill(0),counts=new Array(EQ_KEYS.length).fill(0);
+  const ranges=CENTERS.map(center=>[center/Math.pow(2,1/3),center*Math.pow(2,1/3)]);
+  const maxFrames=Math.min(frames,240),stride=Math.max(1,Math.floor(frames/maxFrames));let sampled=0;
+  for(let f=0;f<frames&&sampled<maxFrames;f+=stride){
+    const start=Math.min(f*hop,Math.max(0,length-N)),re=new Float64Array(N),im=new Float64Array(N);
+    for(let i=0;i<N;i++){const ix=Math.min(start+i,length-1);let x=0;for(const ch of channelData)x+=ch[ix]||0;x/=channelData.length;re[i]=x*(.5-.5*Math.cos(2*Math.PI*i/(N-1)))}
+    fft(re,im);
+    for(let b=0;b<ranges.length;b++){const low=Math.max(1,Math.ceil(ranges[b][0]*N/sr)),high=Math.min(N/2-1,Math.floor(ranges[b][1]*N/sr));let power=0,count=0;for(let k=low;k<=high;k++){power+=re[k]*re[k]+im[k]*im[k];count++}if(count){sums[b]+=power/count;counts[b]++}}
+    sampled++;
+  }
+  const db=sums.map((sum,i)=>counts[i]?10*Math.log10(sum/counts[i]+1e-16):NaN);
+  const available=db.filter(Number.isFinite),mean=available.reduce((a,b)=>a+b,0)/Math.max(1,available.length);
+  const strength=Math.max(0,Math.min(1.5,Number($('strength').value)||0));
+  return {values:db.map(v=>Number.isFinite(v)?Math.max(-18,Math.min(18,Math.round((v-mean)*strength))):0),unavailable:db.map((v,i)=>Number.isFinite(v)?null:LABELS[i]).filter(Boolean)};
+}
+function drawBands(values){
+  $('bands').innerHTML=LABELS.map((label,i)=>{const value=values[i],width=(value+18)/36*100;return `<div class="band"><div class="band-top"><small>${label}</small><b>${value>0?'+':''}${value}</b></div><div class="meter"><i style="width:${width}%"></i></div></div>`}).join('');
+}
+$('analyze').addEventListener('click',async()=>{
+  if(!selectedFile)return;
+  if(!AudioContextClass){setStatus('当前浏览器不支持 Web Audio。请使用最新版 Chrome、Edge 或 Safari。','error');return}
+  $('analyze').disabled=true;$('analyze').textContent='正在分析…';setStatus('正在读取并解码 MP3。较大的音频文件可能需要一点时间……');
+  let context=null;
+  try{
+    context=new AudioContextClass();const data=await selectedFile.arrayBuffer();const buffer=await context.decodeAudioData(data.slice(0));
+    const analysis=analyzeBuffer(buffer),name=($('presetName').value.trim()||selectedFile.name.replace(/\.[^.]+$/,'')||'MP3 频谱音色').slice(0,48);
+    const timbre={};KNOWN_PARAMS.forEach(key=>timbre[key]=0);EQ_KEYS.forEach((key,i)=>timbre[key]=analysis.values[i]);
+    output={format:'mictune.timbre',formatVersion:2,name,createdAt:Date.now(),engine:'0.9.22-tone',timbre};
+    drawBands(analysis.values);$('duration').textContent=buffer.duration.toFixed(1)+' 秒';$('sampleRate').textContent=(buffer.sampleRate/1000).toFixed(1)+' kHz';$('channels').textContent=String(buffer.numberOfChannels);$('result').hidden=false;$('downloadStatus').classList.add('hidden');
+    let msg=`分析完成：${selectedFile.name}\n时长：${buffer.duration.toFixed(1)} 秒 · 采样率：${buffer.sampleRate} Hz · ${buffer.numberOfChannels} 声道\n已生成 MicTune 格式的 EQ 音色配置。`;
+    if(analysis.unavailable.length)msg+='\n以下频段超出音频可分析范围，已设为 0：'+analysis.unavailable.join('、');
+    setStatus(msg,'good');
+  }catch(error){setStatus('分析失败：'+(error&&error.message?error.message:String(error))+'\n可以尝试使用较短的 MP3，或更新浏览器后重试。','error')}
+  finally{if(context){try{await context.close()}catch(_){}}$('analyze').disabled=!selectedFile;$('analyze').textContent='分析 MP3 并生成预设'}
+});
+$('download').addEventListener('click',()=>{
+  if(!output)return;const blob=new Blob([JSON.stringify(output,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),anchor=document.createElement('a');
+  const safe=(output.name||'MicTune_MP3').replace(/[\\/:*?"<>|]/g,'_');anchor.href=url;anchor.download=safe+'.mttune.json';document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);$('downloadStatus').classList.remove('hidden');
+});
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+})();
+</script>
+</body>
+</html>

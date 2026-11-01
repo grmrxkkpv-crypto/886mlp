@@ -1,0 +1,13 @@
+{
+  "name": "MicTune MP3 音色工坊",
+  "short_name": "MicTune音色工坊",
+  "description": "在浏览器本地分析 MP3 频谱并生成 MicTune EQ 音色预设",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#0c1020",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
