@@ -1,4 +1,4 @@
-<!doctype html>
+doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -128,6 +128,48 @@ function analyzeBuffer(buffer){
   const strength=Math.max(0,Math.min(1.5,Number($('strength').value)||0));
   return {values:db.map(v=>Number.isFinite(v)?Math.max(-18,Math.min(18,Math.round((v-mean)*strength))):0),unavailable:db.map((v,i)=>Number.isFinite(v)?null:LABELS[i]).filter(Boolean)};
 }
+async function analyzeViaPlayback(file){
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx)throw new Error('当前浏览器不支持 Web Audio。');
+  const ctx=new Ctx(),audio=new Audio(),url=URL.createObjectURL(file);
+  try{
+    audio.preload='auto';audio.src=url;audio.load();
+    await new Promise((resolve,reject)=>{
+      if(audio.readyState>=1)return resolve();
+      const timer=setTimeout(()=>reject(new Error('音频加载超时，请尝试较短的 MP3。')),20000);
+      audio.addEventListener('loadedmetadata',()=>{clearTimeout(timer);resolve()},{once:true});
+      audio.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('浏览器无法播放该 MP3，请更换文件或浏览器。'))},{once:true});
+    });
+    const analyser=ctx.createAnalyser();analyser.fftSize=8192;analyser.smoothingTimeConstant=0;
+    const source=ctx.createMediaElementSource(audio),gain=ctx.createGain();gain.gain.value=0;
+    source.connect(analyser);analyser.connect(gain);gain.connect(ctx.destination);
+    if(ctx.state==='suspended')await ctx.resume();
+    const bins=new Float32Array(analyser.frequencyBinCount),sums=new Array(8).fill(0),counts=new Array(8).fill(0);
+    const ranges=CENTERS.map(center=>[center/Math.pow(2,1/3),center*Math.pow(2,1/3)]);
+    await audio.play();
+    await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{audio.pause();reject(new Error('播放分析超时，请尝试较短的 MP3。'))},Math.max(30000,(audio.duration||60)*1000+15000));
+      const sample=()=>{
+        analyser.getFloatFrequencyData(bins);
+        for(let b=0;b<ranges.length;b++){
+          let power=0,count=0;
+          for(let k=1;k<bins.length;k++){
+            const hz=k*ctx.sampleRate/analyser.fftSize;
+            if(hz>=ranges[b][0]&&hz<=ranges[b][1]&&Number.isFinite(bins[k])){power+=Math.pow(10,bins[k]/10);count++}
+          }
+          if(count){sums[b]+=power/count;counts[b]++}
+        }
+      };
+      const interval=setInterval(sample,80);
+      audio.addEventListener('ended',()=>{clearInterval(interval);clearTimeout(timer);sample();resolve()},{once:true});
+      audio.addEventListener('error',()=>{clearInterval(interval);clearTimeout(timer);reject(new Error('播放 MP3 时发生错误。'))},{once:true});
+    });
+    const db=sums.map((sum,i)=>counts[i]?10*Math.log10(sum/counts[i]+1e-16):NaN);
+    const valid=db.filter(Number.isFinite),mean=valid.reduce((a,b)=>a+b,0)/Math.max(1,valid.length);
+    const strength=Math.max(0,Math.min(1.5,Number($('strength').value)||0));
+    return {analysis:{values:db.map(v=>Number.isFinite(v)?Math.max(-18,Math.min(18,Math.round((v-mean)*strength))):0),unavailable:db.map((v,i)=>Number.isFinite(v)?null:LABELS[i]).filter(Boolean)},duration:audio.duration,sampleRate:ctx.sampleRate,channels:2};
+  }finally{audio.pause();audio.removeAttribute('src');audio.load();URL.revokeObjectURL(url);try{await ctx.close()}catch(_){}}
+}
 function drawBands(values){
   $('bands').innerHTML=LABELS.map((label,i)=>{const value=values[i],width=(value+18)/36*100;return `<div class="band"><div class="band-top"><small>${label}</small><b>${value>0?'+':''}${value}</b></div><div class="meter"><i style="width:${width}%"></i></div></div>`}).join('');
 }
@@ -137,12 +179,21 @@ $('analyze').addEventListener('click',async()=>{
   $('analyze').disabled=true;$('analyze').textContent='正在分析…';setStatus('正在读取并解码 MP3。较大的音频文件可能需要一点时间……');
   let context=null;
   try{
-    context=new AudioContextClass();const data=await selectedFile.arrayBuffer();const buffer=await context.decodeAudioData(data.slice(0));
-    const analysis=analyzeBuffer(buffer),name=($('presetName').value.trim()||selectedFile.name.replace(/\.[^.]+$/,'')||'MP3 频谱音色').slice(0,48);
+    context=new AudioContextClass();let analysis,duration,sampleRate,channels;
+    try{
+      const data=await selectedFile.arrayBuffer();const buffer=await context.decodeAudioData(data.slice(0));
+      analysis=analyzeBuffer(buffer);duration=buffer.duration;sampleRate=buffer.sampleRate;channels=buffer.numberOfChannels;
+    }catch(decodeError){
+      setStatus('浏览器快速解码失败，正在切换兼容分析模式……','warn');
+      try{await context.close()}catch(_){}context=null;
+      const fallback=await analyzeViaPlayback(selectedFile);
+      analysis=fallback.analysis;duration=fallback.duration;sampleRate=fallback.sampleRate;channels=fallback.channels;
+    }
+    const name=($('presetName').value.trim()||selectedFile.name.replace(/\.[^.]+$/,'')||'MP3 频谱音色').slice(0,48);
     const timbre={};KNOWN_PARAMS.forEach(key=>timbre[key]=0);EQ_KEYS.forEach((key,i)=>timbre[key]=analysis.values[i]);
     output={format:'mictune.timbre',formatVersion:2,name,createdAt:Date.now(),engine:'0.9.22-tone',timbre};
-    drawBands(analysis.values);$('duration').textContent=buffer.duration.toFixed(1)+' 秒';$('sampleRate').textContent=(buffer.sampleRate/1000).toFixed(1)+' kHz';$('channels').textContent=String(buffer.numberOfChannels);$('result').hidden=false;$('downloadStatus').classList.add('hidden');
-    let msg=`分析完成：${selectedFile.name}\n时长：${buffer.duration.toFixed(1)} 秒 · 采样率：${buffer.sampleRate} Hz · ${buffer.numberOfChannels} 声道\n已生成 MicTune 格式的 EQ 音色配置。`;
+    drawBands(analysis.values);$('duration').textContent=duration.toFixed(1)+' 秒';$('sampleRate').textContent=(sampleRate/1000).toFixed(1)+' kHz';$('channels').textContent=String(channels);$('result').hidden=false;$('downloadStatus').classList.add('hidden');
+    let msg=`分析完成：${selectedFile.name}\n时长：${duration.toFixed(1)} 秒 · 采样率：${sampleRate} Hz · ${channels} 声道\n已生成 MicTune 格式的 EQ 音色配置。`;
     if(analysis.unavailable.length)msg+='\n以下频段超出音频可分析范围，已设为 0：'+analysis.unavailable.join('、');
     setStatus(msg,'good');
   }catch(error){setStatus('分析失败：'+(error&&error.message?error.message:String(error))+'\n可以尝试使用较短的 MP3，或更新浏览器后重试。','error')}
